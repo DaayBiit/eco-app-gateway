@@ -1,6 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { Logger, ValidationPipe } from '@nestjs/common';
+import { Logger, RequestMethod, ValidationPipe } from '@nestjs/common';
 import { envs } from './configs';
 import { RpcCustomExceptionFilter } from './common/exceptions/rpc-custom-exception.filter';
 
@@ -10,7 +10,12 @@ async function bootstrap() {
 
   const app = await NestFactory.create(AppModule);
 
-  app.setGlobalPrefix('api');
+  app.setGlobalPrefix('api', {
+    exclude: [{
+      path: '',
+      method: RequestMethod.GET
+    }]
+  });
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -18,6 +23,7 @@ async function bootstrap() {
     })
   )
   app.useGlobalFilters(new RpcCustomExceptionFilter);
+  console.log('Health Check configured');
 
   await app.listen(envs.gwPort);
   logger.log(`Gateway running on port ${envs.gwPort}`);

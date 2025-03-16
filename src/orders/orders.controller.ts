@@ -2,7 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, Inject, Query, Parse
 import { CreateOrderDto } from './dto/create-order.dto';
 
 import { ClientProxy, RpcException } from '@nestjs/microservices';
-import { catchError, firstValueFrom } from 'rxjs';
+import { firstValueFrom } from 'rxjs';
 import { StatusOrderDto } from './dto/status-order.dto';
 import { PaginationOrderDto } from './dto/pagination-order.dto';
 import { NATS_SERVICE } from 'src/configs';
@@ -15,7 +15,12 @@ export class OrdersController {
 
   @Post()
   createProduct(@Body() createOrderDto: CreateOrderDto){
-    return this.client.send('createOrder', createOrderDto)
+    try {
+      return this.client.send('createOrder', createOrderDto)
+    } catch (error) {
+      console.error('GW-Controller.CreateOrder Error: ', error);
+      throw new RpcException(error)
+    }
 
   }
 
